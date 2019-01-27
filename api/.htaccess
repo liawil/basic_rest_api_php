@@ -1,0 +1,19 @@
+## URL REWRITING 
+Options +FollowSymlinks
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^localhost/msd4a/api/$
+RewriteRule "^read/([a-z]*)/$" "read.php?table=$1" [END]
+RewriteRule "^read/([a-z]*)/$" "read.php?table=$1" [END]
+RewriteRule "^read/([a-z]*)/page=([0-9]*)$" "read.php?table=$1&page=$2" [END]
+RewriteRule "^show/([a-z]*)/([0-9]*)$" "show.php?table=$1&id=$2" [END]
+RewriteRule "^create/([a-z]*)/$" "create.php?table=$1" [END]
+RewriteRule "^update/([a-z]*)/([0-9]*)$" "update.php?table=$1&id=$2" [END]
+RewriteRule "^delete/([a-z]*)/([0-9]*)$" "delete.php?table=$1&id=$2" [END]
+RewriteRule "^search/([a-z]*)/([êêéèàa-zA-Z0-9]*)$" "search.php?table=$1&s=$2" [END]
+RewriteRule "^search/([a-z]*)/([êêéèàa-zA-Z0-9]*)?page=([0-9]*)$" "search.php?table=$1&s=$2&page=$3" [END]
+
+
+#RewriteRule ^(.*) localhost/bhk-tech/api/ [QSA,L,R=301]
+
+## ====================================================
+

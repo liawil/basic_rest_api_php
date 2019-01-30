@@ -3,8 +3,7 @@
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Max-Age: 3600");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Methods, Access-Control-Allow-Headers, Authorization, X-Requested-With");
  
 // database connection will be here
 include_once '../config/database.php';
@@ -15,6 +14,7 @@ $db->open();
 
 $table = (isset($_GET['table']) && !empty($_GET['table']))? $_GET['table']: '';
 if ($table == "" OR !$db->existTable($table)) {
+    http_response_code(404);
     die("Error: Not table found !");
 }
 
@@ -59,11 +59,9 @@ if(!$data_has_empty_value){
     $entity->setData();
 
     $stmt = $entity->create();
-$response = $stmt->fetch(PDO::FETCH_ASSOC);
-echo json_encode($response); exit();
  
     // create the entity
-    if($entity->create()){
+    if($stmt->execute()){
  
         // set response code - 201 created
         http_response_code(201);
@@ -87,7 +85,7 @@ echo json_encode($response); exit();
 else{
  
     // set response code - 400 bad request
-    //http_response_code(400);
+    http_response_code(400);
  
     // tell the user
     echo json_encode(array("message" => "Unable to create ".$table.". Data is incomplete."));

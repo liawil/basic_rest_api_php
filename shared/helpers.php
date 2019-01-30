@@ -338,3 +338,52 @@ if (!function_exists('curl_post')) {
 		];
 	}
 }
+
+// Build response in JSON format
+function buildResponse($stmt,$table,$db){
+    include '../config/core.php';
+	//$rows_arr=array();
+	$rows_json="";
+	
+	$c = 0;
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+		//$row_item = array();
+		$row_json = "{";
+
+        foreach ($row as $key => $value) {
+            if (preg_match("/^id_/", $key)){                
+                if ($key == "id_".$table){ 
+                    $id = $value;
+					//$row_item[$key] = html_entity_decode($value);
+					$row_json.='"'.$key.'":"'.$value.'"';
+                }
+                else{
+                    $obj = substr($key, 3);
+                    include_once '../models/'.$obj.'.php';
+                    $objClass = ucwords($obj);
+                    $newObj = new $objClass($db);
+                    $newObj->id = intval($value);
+                    $stmtObj = $newObj->show();
+					//$row_item[$obj] = new ArrayObject(buildResponse($stmtObj,$obj,$db));
+					$row_json.=',"'.$obj.'":'.buildResponse($stmtObj,$obj,$db);
+                }
+            }else{
+				//$row_item[$key] = html_entity_decode($value);
+				$row_json.=',"'.$key.'":"'.$value.'"';
+			}
+        }
+		//$row_item['link_api_url'] = "{$api_url}show/{$table}/{$id}";
+		$row_json.=',"link_api_url":"'.$api_url.'show/'.$table.'/'.$id.'"';
+		//$row_item['link_site_url'] = "{$home_url}{$table}&id={$id}";
+		$row_json.=',"link_site_url":"'.$home_url.$table.'&id='.$id.'"';
+		//array_push($rows_arr, $row_item);
+		$row_json.="}";
+
+		if($c)$rows_json.=",".$row_json;
+		else $rows_json.=$row_json;
+		
+		$c++;
+    }
+	//return $rows_arr;
+	return $rows_json.='';
+}

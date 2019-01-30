@@ -15,6 +15,7 @@ $db->open();
 
 $table = (isset($_GET['table']) && !empty($_GET['table']))? $_GET['table']: '';
 if ($table == "" OR !$db->existTable($table)) {
+    http_response_code(404);
     die("Error: Not table found !");
 }
 
@@ -54,25 +55,33 @@ if (!count((array)$data)){
         }
     }
 }
-$stmt = $entity->update();
-$response = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// update the table
-if(!$data_has_empty_value && $response){
+if(!$data_has_empty_value){
+    
+    $stmt = $entity->update();
+    // update the table
+    if($stmt->execute()){
+    
+        // set response code - 200 ok
+        http_response_code(200);
+        
+        // tell the user
+        echo json_encode(array("message" => "$table was updated."));
+    }
+    
+    // if unable to update the table, tell the user
+    else{
+    
+        // set response code - 503 service unavailable
+        http_response_code(503);
+    
+        // tell the user
+        echo json_encode(array("message" => "Unable to update $table."));
+    }
+}else{
+     // set response code - 400 bad request
+     http_response_code(400);
  
-    // set response code - 200 ok
-    http_response_code(200);
- 	
-    // tell the user
-    echo json_encode(array("message" => "$table was updated."));
-}
- 
-// if unable to update the table, tell the user
-else{
- 
-    // set response code - 503 service unavailable
-    http_response_code(503);
- 
-    // tell the user
-    echo json_encode(array("message" => "Unable to update $table."));
+     // tell the user
+     echo json_encode(array("message" => "Unable to update ".$table.". Data is incomplete."));
 }

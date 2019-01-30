@@ -12,6 +12,7 @@ $db->open();
 
 $table = (isset($_GET['table']) && !empty($_GET['table']))? $_GET['table']: '';
 if ($table == "" OR !$db->existTable($table)) {
+    http_response_code(404);
     die("Error: Not table found !");
 }
 
@@ -32,7 +33,7 @@ $entity = new $class($db);
 $keywords=isset($_GET["s"]) ? $_GET["s"] : "";
  
 // query products
-$stmt = $entity->search($keywords);
+$stmt = (isset($_GET['page']))? $entity->search($keywords, intval($from_record_num)) : $entity->search($keywords);
 $num = $stmt->rowCount();
  
 // check if more than 0 record found
@@ -40,29 +41,17 @@ if($num>0){
  
     // products array
     $entity_arr=array();
-    $entity_arr["records"]=array();
+    $entity_arr["records"]= array();
     $entity_arr["paging_site"]=array();
     $entity_arr["paging_api"]=array();
  
-    // retrieve our table contents
-    // fetch() is faster than fetchAll()
-    // http://stackoverflow.com/questions/2770630/pdofetchall-vs-pdofetch-in-a-loop
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-        $entity_item = array();
-
-        foreach ($row as $key => $value) {
-            if ($key == "id_".$table) $id = $value;
-            $entity_item[$key] = html_entity_decode($value);
-        }
-        $entity_item['link_api_url'] = "{$api_url}show/{$table}/{$id}";
-        $entity_item['link_site_url'] = "{$home_url}{$table}&id={$id}";
-        array_push($entity_arr["records"], $entity_item);
-    }
+    //$entity_arr["records"] = buildResponse($stmt,$table,$db);
+    $entity_arr["records"] = json_decode("[".buildResponse($stmt,$table,$db)."]");
 
     // include paging
-    $total_rows=$num;
+    $total_rows=$entity->count();
     $page_url="{$home_url}{$table}&search={$keywords}&";
-    $page_api_url="{$api_url}search/{$table}/{$keywords}?";
+    $page_api_url="{$api_url}search/{$table}/{$keywords}/";
 
     $paging_site=$utilities->getPaging($page, $total_rows, $records_per_page, $page_url);
     $entity_arr["paging_site"]=$paging_site;
@@ -78,12 +67,11 @@ if($num>0){
 }
  
 else{
-    // set response code - 404 Not found
-    //http_response_code(404);
+    // set response code - 204 No content
+    http_response_code(204);
  
-    // tell the user no products found
+    // tell the user no entity found
     echo json_encode(
-        array("message" => "No $table found.")
+        array("message" => "No ".$table." found.")
     );
 }
-?>

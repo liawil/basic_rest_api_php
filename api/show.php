@@ -16,6 +16,7 @@ $db->open();
 
 $table = (isset($_GET['table']) && !empty($_GET['table']))? $_GET['table']: '';
 if ($table == "" OR !$db->existTable($table)) {
+    http_response_code(404);
     die("Error: Not table found !");
 }
 $db->close();
@@ -40,12 +41,13 @@ $stmt = $entity->show();
  
 if($stmt->rowCount()){
 
-    $entity_arr = array();
+    //$entity_arr = new ArrayObject(buildResponse($stmt,$table,$db));
+    $entity_arr = json_decode(buildResponse($stmt,$table,$db));
 
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    foreach ($row as $key => $value) {
-        $entity_arr[$key] = html_entity_decode($value);
-    }
+    // $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    // foreach ($row as $key => $value) {
+    //     $entity_arr[$key] = html_entity_decode($value);
+    // }
      
     // set response code - 200 OK
     http_response_code(200);
@@ -61,4 +63,4 @@ else{
     // tell the user product does not exist
     echo json_encode(array("message" => "Product does not exist."));
 }
-?>
+

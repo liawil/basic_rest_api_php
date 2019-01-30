@@ -39,10 +39,10 @@ class Database
 	public function select($table, $selectOptions = array(), $orderOrLimit=""){
 		
 		$select_opt = selectOptions($selectOptions);
-		$query = "SELECT ".$select_opt."\nFROM ".$table;
-		$query .= ($orderOrLimit != "")? "\n".$orderOrLimit : "";
+		$sql = "SELECT ".$select_opt."\nFROM ".$table;
+		$sql .= ($orderOrLimit != "")? "\n".$orderOrLimit : "";
 
-		$stmt = $this->bdd->query($query);
+		$stmt = $this->bdd->query($sql);
 
 		return $stmt;
 	}
@@ -55,10 +55,10 @@ class Database
 		}
 		$where_opt = whereOptionsNew($whereOptions);
 
-		$query = "SELECT ".$select_opt."\nFROM ".$table."\nWHERE ".$where_opt;
-		$query .= ($orderOrLimit != "")? "\n".$orderOrLimit : "";
+		$sql = "SELECT ".$select_opt."\nFROM ".$table."\nWHERE ".$where_opt;
+		$sql .= ($orderOrLimit != "")? "\n".$orderOrLimit : "";
 
-		$stmt = $this->bdd->query($query);
+		$stmt = $this->bdd->query($sql);
 		
 		return $stmt;
 	}
@@ -68,10 +68,10 @@ class Database
 		$select_opt = selectOptions($selectOptions);
 		$join_opt = joinOptions($joinOptions);
 
-		$query = "SELECT ".$select_opt."\nFROM ".$table.$join_opt;
-		$query .= ($orderOrLimit != "")? "\n".$orderOrLimit : "";
+		$sql = "SELECT ".$select_opt."\nFROM ".$table.$join_opt;
+		$sql .= ($orderOrLimit != "")? "\n".$orderOrLimit : "";
 
-		$stmt = $this->bdd->query($query);
+		$stmt = $this->bdd->query($sql);
 		
 		return $stmt;
 	}
@@ -82,11 +82,11 @@ class Database
 		$join_opt = joinOptions($joinOptions);
 		$where_opt = whereOptionsNew($whereOptions);
 
-		$query = "SELECT ".$select_opt."\nFROM ".$table.
+		$sql = "SELECT ".$select_opt."\nFROM ".$table.
 				$join_opt."\nWHERE ".$where_opt;
-		$query .= ($orderOrLimit != "")? "\n".$orderOrLimit : "";
+		$sql .= ($orderOrLimit != "")? "\n".$orderOrLimit : "";
 
-		$stmt = $this->bdd->query($query);
+		$stmt = $this->bdd->query($sql);
 		
 		return $stmt;
 	}
@@ -94,12 +94,12 @@ class Database
 	public function insert($table, $data){
 		$data_list = insertOptions($data);
 
-		$query = "INSERT INTO ".$table." SET ".$data_list;
+		$sql = "INSERT INTO ".$table." SET ".$data_list;
 
 		try {
-			$stmt = $this->bdd->query($query);
+			$stmt = $this->bdd->prepare($sql);
 		} catch (Exception $e) {
-			return $stmt;
+			return $e;
 		}
 		return $stmt;
 	}
@@ -108,25 +108,25 @@ class Database
 		$data_list = insertOptions($data);
 		if (is_array($id)){
 			$where_opt = whereOptions($id,'=');
-			$query = "UPDATE ".$table."\n SET ".$data_list."\nWHERE ".$where_opt;
+			$sql = "UPDATE ".$table."\n SET ".$data_list."\nWHERE ".$where_opt;
 		}else{
-			$query = "UPDATE ".$table."\n SET ".$data_list."\nWHERE id_".$table." = '".$id."'";
+			$sql = "UPDATE ".$table."\n SET ".$data_list."\nWHERE id_".$table." = '".$id."'";
 		}
 
 		try {
-			$query = $this->bdd->query($query);
+			$stmt = $this->bdd->prepare($sql);
 		} catch (Exception $e) {
-			return $query;
+			return $e;
 		}
-		return $query;
+		return $stmt;
 	}
 
 	public function existTable($table){
 		
-		$query = "SHOW TABLES LIKE '%".$table."%'";
+		$sql = "SHOW TABLES LIKE '%".$table."%'";
 
 		try {
-			$stmt = $this->bdd->query($query);
+			$stmt = $this->bdd->query($sql);
 		} catch (Exception $e) {
 			die("Error: ".$e->getMessage());
 			return false;
@@ -138,13 +138,13 @@ class Database
 	public function delete($table, $id){
 		if (is_array($id)){
 			$where_opt = whereOptions($id,'=');
-			$query = "DELETE FROM ".$table."\nWHERE ".$where_opt;
+			$sql = "DELETE FROM ".$table."\nWHERE ".$where_opt;
 		}else{
-			$query = "DELETE FROM ".$table."\nWHERE id_".$table." = '".$id."'";
+			$sql = "DELETE FROM ".$table."\nWHERE id_".$table." = '".$id."'";
 		}
 
 		try {
-			$query = $this->bdd->query($query);
+			$sql = $this->bdd->query($sql);
 		} catch (Exception $e) {
 			return false;
 		}
